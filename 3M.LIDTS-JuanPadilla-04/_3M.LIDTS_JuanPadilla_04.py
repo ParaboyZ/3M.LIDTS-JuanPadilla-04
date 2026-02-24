@@ -1,5 +1,7 @@
 import tkinter as tk
 from tkinter import messagebox
+import os
+from datetime import datetime
 
 ventana = tk.Tk()
 ventana.title("Actividad 04 - Formulario Juan Padilla")
@@ -19,23 +21,57 @@ def borrar():
     entryNombre.focus()
 
 def enviar():
-    if (entryNombre.get() == "" or
-        entryApellido.get() == "" or
-        entryEdad.get() == "" or
-        entryEstatura.get() == "" or
-        entryTelefono.get() == "" or
-        rbGenero.get() == ""):
-        
+    nombre = entryNombre.get().strip()
+    apellido = entryApellido.get().strip()
+    edad = entryEdad.get().strip()
+    estatura = entryEstatura.get().strip()
+    telefono = entryTelefono.get().strip()
+    genero = rbGenero.get()
+
+    # Validación de campos vacíos
+    if (nombre == "" or apellido == "" or edad == "" or 
+        estatura == "" or telefono == "" or not genero):
         messagebox.showwarning("Error", "Completa todos los campos")
-    else:
-        info = (f"Nombre: {entryNombre.get()}\n"
-                f"Apellido: {entryApellido.get()}\n"
-                f"Edad: {entryEdad.get()}\n"
-                f"Estatura: {entryEstatura.get()}\n"
-                f"Teléfono: {entryTelefono.get()}\n"
-                f"Género: {rbGenero.get()}")
+        return
+
+    # Validación de Solo Letras (Nombres y Apellidos)
+    if any(char.isdigit() for char in nombre) or any(char.isdigit() for char in apellido):
+        messagebox.showerror("Error", "Nombre y Apellido no deben contener números")
+        return
+
+    # Validación de Números (Edad, Estatura, Teléfono)
+    try:
+        int(edad)
+        float(estatura)
+        if not telefono.isdigit():
+            raise ValueError
+    except ValueError:
+        messagebox.showerror("Error", "Edad, Estatura y Teléfono deben ser valores numéricos correctos")
+        return
+
+    # Si todo es válido, preparar información y guardar
+    fecha_registro = datetime.now().strftime("%d/%m/%Y %H:%M:%S")
+    info = (f"--- REGISTRO DATACODE ---\n"
+            f"Fecha: {fecha_registro}\n"
+            f"Nombre: {nombre}\n"
+            f"Apellido: {apellido}\n"
+            f"Edad: {edad}\n"
+            f"Estatura: {estatura}\n"
+            f"Teléfono: {telefono}\n"
+            f"Género: {genero}\n"
+            f"-----------------------------\n")
+
+    # Guardar en archivo TXT en el escritorio
+    ruta_escritorio = os.path.join(os.path.expanduser("~"), "Desktop", "Registro_IA_Python.txt")
+    
+    try:
+        with open(ruta_escritorio, "a", encoding="utf-8") as archivo:
+            archivo.write(info + "\n")
         
-        messagebox.showinfo("Datos registrados", info)
+        messagebox.showinfo("Datos registrados", "Información validada y guardada en el escritorio")
+        borrar()
+    except Exception as e:
+        messagebox.showerror("Error", f"No se pudo guardar: {e}")
 
 contenedor = tk.Frame(ventana, bg="white", padx=25, pady=25)
 contenedor.place(relx=0.5, rely=0.5, anchor="center")
